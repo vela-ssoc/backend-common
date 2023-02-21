@@ -1,6 +1,8 @@
 package logback
 
 import (
+	"os"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -17,7 +19,28 @@ type Logger interface {
 	Infof(string, ...any)
 	Warnf(string, ...any)
 	Errorf(string, ...any)
-	Level() zapcore.Level
+	Replace(*zap.Logger)
+}
+
+func Stdout() Logger {
+	prod := zap.NewProductionEncoderConfig()
+	prod.EncodeTime = zapcore.ISO8601TimeEncoder
+	prod.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
+	encoder := zapcore.NewConsoleEncoder(prod)
+	syncer := zapcore.AddSync(os.Stdout)
+	level := zapcore.DebugLevel
+
+	core := zapcore.NewCore(encoder, syncer, level)
+
+	opts := []zap.Option{
+		zap.WithCaller(true),
+		zap.AddStacktrace(zapcore.ErrorLevel),
+		zap.AddCallerSkip(1),
+	}
+	lg := zap.New(core, opts...)
+
+	return &sugarLog{sugar: lg.Sugar()}
 }
 
 func Sugar(l *zap.Logger) Logger {
@@ -38,4 +61,4 @@ func (sg *sugarLog) Debugf(s string, v ...any) { sg.sugar.Debugf(s, v...) }
 func (sg *sugarLog) Infof(s string, v ...any)  { sg.sugar.Infof(s, v...) }
 func (sg *sugarLog) Warnf(s string, v ...any)  { sg.sugar.Warnf(s, v...) }
 func (sg *sugarLog) Errorf(s string, v ...any) { sg.sugar.Errorf(s, v...) }
-func (sg *sugarLog) Level() zapcore.Level      { return sg.sugar.Level() }
+func (sg *sugarLog) Replace(l *zap.Logger)     { sg.sugar = l.Sugar() }
