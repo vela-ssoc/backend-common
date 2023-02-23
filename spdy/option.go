@@ -41,13 +41,9 @@ func WithEncrypt(passwd []byte) Option {
 
 func (opt option) muxer(tran net.Conn) *muxer {
 	backlog := opt.backlog
-	maxsize := opt.maxsize
 	capacity := opt.capacity
 	if backlog < 0 {
 		backlog = 0
-	}
-	if maxsize <= 0 {
-		maxsize = 40960 // 40 KiB
 	}
 	if capacity <= 0 {
 		capacity = 64
