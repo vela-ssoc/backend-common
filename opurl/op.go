@@ -5,29 +5,39 @@ import (
 	"strconv"
 )
 
-var (
-	OpPing        = URL{method: http.MethodGet, path: "/api/ping"}
-	OpIntobSyscmd = URL{method: http.MethodGet, path: "/api/intob/syscmd"}
-	OpIntomSyscmd = URL{method: http.MethodGet, path: "/api/intom/syscmd"}
-)
+var OpPing = URL{method: http.MethodGet, path: "/api/ping"}
 
-var MonFS = URL{method: http.MethodGet, path: "/api/fs"}
+var BrkJoin = URL{method: http.MethodConnect, path: "/api/broker"}
 
-var BrkFS = URL{method: http.MethodGet, path: "/api/intob/fs"}
+var MonJoin = URL{method: http.MethodConnect, path: "/api/minion"}
 
-func MgtIntom(method string, bid, mid int64, path string) URL {
-	p := "/api/intom/" + strconv.FormatInt(mid, 10) + "/" + path
+func BIntom(mid, method, path, query string) URL {
 	return URL{
-		id:     strconv.FormatInt(bid, 10),
+		host:   mid,
 		method: method,
-		path:   p,
+		path:   "/api/intom/" + path,
+		query:  query,
 	}
 }
 
-func BrkIntom(method string, mid string, path string) URL {
+func MIntom(bid, mid int64, method, path, query string) URL {
+	host := strconv.FormatInt(bid, 10)
+	sid := strconv.FormatInt(mid, 10)
+
 	return URL{
-		id:     mid,
+		host:   host,
 		method: method,
-		path:   "/api/intom/" + path,
+		path:   "/api/intom/" + sid + "/" + path,
+		query:  query,
+	}
+}
+
+func Intob(bid int64, method, path, query string) URL {
+	host := strconv.FormatInt(bid, 10)
+	return URL{
+		host:   host,
+		method: method,
+		path:   "/api/intob/" + path,
+		query:  query,
 	}
 }

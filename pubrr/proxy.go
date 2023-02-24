@@ -9,6 +9,7 @@ import (
 	"github.com/vela-ssoc/backend-common/opurl"
 )
 
+// Forwarder 代理转发模块
 type Forwarder interface {
 	Forward(opurl.URLer, http.ResponseWriter, *http.Request)
 }
