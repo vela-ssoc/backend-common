@@ -22,8 +22,8 @@ type URL struct {
 func (u URL) SetQuery(query url.Values) URL { u.query = query.Encode(); return u }
 func (u URL) WithQuery(query string) URL    { u.query = query; return u }
 func (u URL) String() string                { return u.URL().String() }
-func (u URL) SetID(id int64) URL            { u.id = strconv.FormatInt(id, 10); return u }
-func (u URL) WithID(id string) URL          { u.id = id; return u }
+func (u URL) IntID(id int64) URL            { u.id = strconv.FormatInt(id, 10); return u }
+func (u URL) StrID(id string) URL           { u.id = id; return u }
 
 func (u URL) Method() string {
 	if m := u.method; m != "" {
@@ -33,6 +33,10 @@ func (u URL) Method() string {
 }
 
 func (u URL) URL() *url.URL {
+	host := u.id
+	if host == "" {
+		host = "unset"
+	}
 	return &url.URL{
 		Scheme:   "http",
 		Host:     u.id,
