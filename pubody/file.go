@@ -1,4 +1,4 @@
-package pubrr
+package pubody
 
 import (
 	"sort"
@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-type FS struct {
-	Abs   string `json:"abs"`
-	Files Files  `json:"files"`
+type Folder struct {
+	Abs   string    `json:"abs"`
+	Items FileItems `json:"items"`
 }
 
-type File struct {
+type FileItem struct {
 	Path  string    `json:"path"`
 	Name  string    `json:"name"`
 	Size  int64     `json:"size"`
@@ -20,29 +20,29 @@ type File struct {
 	Mode  string    `json:"mode"`
 }
 
-type Files []*File
+type FileItems []*FileItem
 
-func (fs Files) NameAsc() Files {
+func (fs FileItems) NameAsc() FileItems {
 	sort.Slice(fs, func(i, j int) bool { return strings.Compare(fs[i].Name, fs[j].Name) < 0 })
 	return fs
 }
 
-func (fs Files) NameDesc() Files {
+func (fs FileItems) NameDesc() FileItems {
 	sort.Slice(fs, func(i, j int) bool { return strings.Compare(fs[i].Name, fs[j].Name) > 0 })
 	return fs
 }
 
-func (fs Files) SizeAsc() Files {
+func (fs FileItems) SizeAsc() FileItems {
 	sort.Slice(fs, func(i, j int) bool { return fs[i].Size < fs[j].Size })
 	return fs
 }
 
-func (fs Files) SizeDesc() Files {
+func (fs FileItems) SizeDesc() FileItems {
 	sort.Slice(fs, func(i, j int) bool { return fs[i].Size > fs[j].Size })
 	return fs
 }
 
-func (fs Files) Human() Files {
+func (fs FileItems) Human() FileItems {
 	sort.Slice(fs, func(i, j int) bool {
 		ifs, jfs := fs[i], fs[j]
 		if ifs.Dir && !jfs.Dir {

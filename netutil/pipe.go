@@ -1,8 +1,6 @@
-package pubrr
+package netutil
 
-import (
-	"github.com/gorilla/websocket"
-)
+import "github.com/gorilla/websocket"
 
 func Pipe(fore, back *websocket.Conn) {
 	go func() {

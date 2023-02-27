@@ -1,4 +1,4 @@
-package pubrr
+package netutil
 
 import (
 	"encoding/json"
@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/vela-ssoc/backend-common/pubody"
 )
 
 func Upgrade(node string) websocket.Upgrader {
 	errorFn := func(w http.ResponseWriter, r *http.Request, status int, reason error) {
-		ret := ErrorResult{Code: status, Node: node, Cause: reason.Error()}
+		ret := &pubody.BizError{Code: status, Node: node, Cause: reason.Error()}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(ret)
@@ -24,7 +25,4 @@ func Upgrade(node string) websocket.Upgrader {
 		CheckOrigin:       func(*http.Request) bool { return true },
 		EnableCompression: true,
 	}
-}
-
-func CleanHeader() {
 }
