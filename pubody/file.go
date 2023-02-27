@@ -6,9 +6,11 @@ import (
 	"time"
 )
 
+// Folder 目录列表
 type Folder struct {
-	Abs   string    `json:"abs"`
-	Items FileItems `json:"items"`
+	Abs       string    `json:"abs"`       // 当前绝对路径
+	Separator string    `json:"separator"` // 当前路径分隔符
+	Items     FileItems `json:"items"`     // 文件列表
 }
 
 type FileItem struct {
@@ -17,6 +19,7 @@ type FileItem struct {
 	Size  int64     `json:"size"`
 	Mtime time.Time `json:"mtime"`
 	Dir   bool      `json:"dir"`
+	Ext   string    `json:"ext"` // 扩展名
 	Mode  string    `json:"mode"`
 }
 

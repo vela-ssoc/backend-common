@@ -1,7 +1,6 @@
 package spdy
 
 import (
-	"bytes"
 	"context"
 	"io"
 	"math"
@@ -12,34 +11,23 @@ import (
 )
 
 type stream struct {
-	id           uint32
-	mux          *muxer
-	syn          bool        // 是否已经发送了握手帧
-	wmu          sync.Locker // 数据写锁
-	cond         *sync.Cond
-	buf          *bytes.Buffer // 消息缓冲池
-	err          error         // 错误信息
-	closed       atomic.Bool   // 保证 close 方法只被执行一次
-	ctx          context.Context
-	cancel       context.CancelFunc
-	readDeadline time.Time
+	id        uint32
+	mux       *muxer
+	syn       bool        // 是否已经发送了握手帧
+	wmu       sync.Locker // 数据写锁
+	cond      *sync.Cond  // stream 读写条件锁
+	buff      []byte      // 消息缓冲池
+	maxsize   int         // 缓冲区最大字节数
+	err       error       // 错误信息
+	closed    atomic.Bool // 保证 close 方法只被执行一次
+	ctx       context.Context
+	cancel    context.CancelFunc
+	readline  time.Time
+	writeline time.Time
 }
 
-func (stm *stream) Read(p []byte) (n int, err error) {
-	stm.cond.L.Lock()
-	for {
-		if buf := stm.buf; buf.Len() != 0 {
-			n, err = buf.Read(p)
-			break
-		}
-		if err = stm.err; err != nil {
-			break
-		}
-		stm.cond.Wait()
-	}
-	stm.cond.L.Unlock()
-
-	return
+func (stm *stream) Read(p []byte) (int, error) {
+	return stm.read(p)
 }
 
 func (stm *stream) Write(b []byte) (int, error) {
@@ -85,8 +73,6 @@ func (stm *stream) SetDeadline(t time.Time) error {
 }
 
 func (stm *stream) SetReadDeadline(t time.Time) error {
-	stm.readDeadline = t
-	stm.cond.Broadcast()
 	return nil
 }
 
@@ -97,13 +83,60 @@ func (stm *stream) Close() error {
 }
 
 func (stm *stream) receive(p []byte) (int, error) {
+	total := len(p)
+	if total == 0 {
+		return 0, nil
+	}
+
 	stm.cond.L.Lock()
-	n, err := stm.buf.Write(p) // FIXME: 尚未实现流控
+	for {
+		psz := len(p)
+		if psz == 0 {
+			break
+		}
+		used := len(stm.buff)
+		for used >= stm.maxsize {
+			stm.cond.Wait()
+			used = len(stm.buff)
+		}
+
+		free := stm.maxsize - used
+		idx := psz
+		if idx > free {
+			idx = free
+		}
+		stm.buff = append(stm.buff, p[:idx]...)
+		p = p[idx:]
+	}
 	stm.cond.L.Unlock()
+	stm.cond.Broadcast() // 通知读取协程读取数据
 
-	stm.cond.Broadcast()
+	return total, nil
+}
 
-	return n, err
+func (stm *stream) read(p []byte) (int, error) {
+	psz := len(p)
+	if psz == 0 {
+		return 0, nil
+	}
+
+	stm.cond.L.Lock()
+	used := len(stm.buff)
+	// 如果缓冲区没有任何数据，就等待数据写入
+	if used == 0 {
+		stm.cond.Wait()
+		used = len(stm.buff)
+	}
+	idx := psz
+	if idx > used {
+		idx = used
+	}
+	copy(p, stm.buff[:idx])
+	stm.buff = stm.buff[idx:]
+	stm.cond.L.Unlock()
+	stm.cond.Broadcast() // 通知写入协程可以写入数据了
+
+	return idx, nil
 }
 
 func (stm *stream) closeError(err error, fin bool) error {

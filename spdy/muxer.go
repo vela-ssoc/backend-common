@@ -1,7 +1,6 @@
 package spdy
 
 import (
-	"bytes"
 	"context"
 	"io"
 	"net"
@@ -84,13 +83,13 @@ func (mux *muxer) newStream() (*stream, error) {
 	ctx, cancel := context.WithCancel(mux.ctx)
 
 	stm := &stream{
-		id:     stmID,
-		mux:    mux,
-		wmu:    new(sync.Mutex),
-		cond:   cond,
-		buf:    new(bytes.Buffer),
-		ctx:    ctx,
-		cancel: cancel,
+		id:      stmID,
+		mux:     mux,
+		wmu:     new(sync.Mutex),
+		cond:    cond,
+		maxsize: 655350,
+		ctx:     ctx,
+		cancel:  cancel,
 	}
 
 	return stm, nil
@@ -101,14 +100,14 @@ func (mux *muxer) synStream(stmID uint32) *stream {
 	ctx, cancel := context.WithCancel(mux.ctx)
 
 	return &stream{
-		id:     stmID,
-		syn:    true,
-		mux:    mux,
-		wmu:    new(sync.Mutex),
-		cond:   cond,
-		buf:    new(bytes.Buffer),
-		ctx:    ctx,
-		cancel: cancel,
+		id:      stmID,
+		syn:     true,
+		mux:     mux,
+		wmu:     new(sync.Mutex),
+		cond:    cond,
+		maxsize: 655350,
+		ctx:     ctx,
+		cancel:  cancel,
 	}
 }
 
@@ -144,6 +143,7 @@ func (mux *muxer) read() {
 	for {
 		err := mux.readFull(header[:])
 		if err != nil {
+			_ = mux.Close()
 			break
 		}
 
