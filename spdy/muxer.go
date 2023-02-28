@@ -79,35 +79,28 @@ func (mux *muxer) newStream() (*stream, error) {
 	}
 
 	stmID := mux.stmID.Add(2)
-	cond := sync.NewCond(new(sync.Mutex))
 	ctx, cancel := context.WithCancel(mux.ctx)
 
 	stm := &stream{
-		id:      stmID,
-		mux:     mux,
-		wmu:     new(sync.Mutex),
-		cond:    cond,
-		maxsize: 655350,
-		ctx:     ctx,
-		cancel:  cancel,
+		id:        stmID,
+		mux:       mux,
+		readEvtCh: make(chan struct{}, 1),
+		ctx:       ctx,
+		cancel:    cancel,
 	}
 
 	return stm, nil
 }
 
 func (mux *muxer) synStream(stmID uint32) *stream {
-	cond := sync.NewCond(new(sync.Mutex))
 	ctx, cancel := context.WithCancel(mux.ctx)
-
 	return &stream{
-		id:      stmID,
-		syn:     true,
-		mux:     mux,
-		wmu:     new(sync.Mutex),
-		cond:    cond,
-		maxsize: 655350,
-		ctx:     ctx,
-		cancel:  cancel,
+		id:        stmID,
+		syn:       true,
+		mux:       mux,
+		readEvtCh: make(chan struct{}, 1),
+		ctx:       ctx,
+		cancel:    cancel,
 	}
 }
 
@@ -169,6 +162,7 @@ func (mux *muxer) read() {
 			dat := make([]byte, size)
 			if err = mux.readFull(dat); err == nil {
 				_, err = stm.receive(dat)
+				stm.notifyReadEvt()
 			}
 			if err != nil {
 				_ = stm.closeError(err, true)
