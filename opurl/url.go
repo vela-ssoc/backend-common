@@ -25,7 +25,7 @@ func (u URL) WithQuery(query string) URL    { u.query = query; return u }
 func (u URL) String() string                { return u.URL().String() }
 func (u URL) IntID(id int64) URL            { u.host = strconv.FormatInt(id, 10); return u }
 func (u URL) StrID(id string) URL           { u.host = id; return u }
-func (u URL) AsWS() URL                     { u.scheme = "ws"; return u }
+func (u URL) AsWS() URL                     { u.scheme = "ws"; u.method = http.MethodGet; return u }
 
 func (u URL) Method() string {
 	if m := u.method; m != "" {
@@ -35,11 +35,10 @@ func (u URL) Method() string {
 }
 
 func (u URL) URL() *url.URL {
-	host := u.host
+	host, scheme := u.host, u.scheme
 	if host == "" {
 		host = "default"
 	}
-	scheme := u.scheme
 	if scheme == "" {
 		scheme = "http"
 	}

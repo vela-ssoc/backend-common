@@ -11,15 +11,6 @@ var BrkJoin = URL{method: http.MethodConnect, path: "/api/broker"}
 
 var MonJoin = URL{method: http.MethodConnect, path: "/api/minion"}
 
-func BIntom(mid, method, path, query string) URL {
-	return URL{
-		host:   mid,
-		method: method,
-		path:   "/api/intom/" + path,
-		query:  query,
-	}
-}
-
 func MMrr(bid, mid int64, method, path, query string) URL {
 	host := strconv.FormatInt(bid, 10)
 	sid := strconv.FormatInt(mid, 10)
