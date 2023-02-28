@@ -20,10 +20,10 @@ func Forward(tran *http.Transport, node string) Forwarder {
 		return &httputil.ReverseProxy{
 			Transport: tran,
 			ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
-				code := http.StatusBadGateway
+				code := http.StatusBadRequest
 				ret := &pubody.BizError{Code: code, Node: node, Cause: err.Error()}
 				w.Header().Set("Content-Type", "application/json; charset=utf-8")
-				w.WriteHeader(http.StatusBadRequest)
+				w.WriteHeader(code)
 				_ = json.NewEncoder(w).Encode(ret)
 			},
 		}

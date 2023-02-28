@@ -11,14 +11,14 @@ var BrkJoin = URL{method: http.MethodConnect, path: "/api/broker"}
 
 var MonJoin = URL{method: http.MethodConnect, path: "/api/minion"}
 
-func MMrr(bid, mid int64, method, path, query string) URL {
+func MArr(bid, mid int64, method, path, query string) URL {
 	host := strconv.FormatInt(bid, 10)
 	sid := strconv.FormatInt(mid, 10)
 
 	return URL{
 		host:   host,
 		method: method,
-		path:   "/api/mrr/" + sid + "/" + path,
+		path:   "/api/arr/" + sid + "/" + path,
 		query:  query,
 	}
 }
@@ -33,16 +33,16 @@ func MBrr(bid int64, method, path, query string) URL {
 	}
 }
 
-func BMrr(mid, method, path, query string) URL {
+func BArr(mid, method, path, query string) URL {
 	return URL{
 		host:   mid,
 		method: method,
-		path:   "/api/mrr/" + path,
+		path:   "/api/arr/" + path,
 		query:  query,
 	}
 }
 
-func BMws(mid, path, query string) URL {
+func BAws(mid, path, query string) URL {
 	return URL{
 		scheme: "ws",
 		host:   mid,
@@ -52,7 +52,7 @@ func BMws(mid, path, query string) URL {
 	}
 }
 
-func MMws(bid, mid int64, path, query string) URL {
+func MAws(bid, mid int64, path, query string) URL {
 	host := strconv.FormatInt(bid, 10)
 	sid := strconv.FormatInt(mid, 10)
 	return URL{

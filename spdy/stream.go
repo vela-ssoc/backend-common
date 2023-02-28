@@ -142,7 +142,7 @@ func (stm *stream) readBlocking() error {
 	case <-stm.readEvtCh:
 		return nil
 	case <-deadline:
-		return context.Canceled
+		return context.DeadlineExceeded
 	case <-stm.ctx.Done():
 		return stm.ctx.Err()
 	}
