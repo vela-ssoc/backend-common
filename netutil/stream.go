@@ -7,11 +7,10 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/vela-ssoc/backend-common/opurl"
 )
 
 type Streamer interface {
-	Stream(opurl.URLer, http.Header) (*websocket.Conn, error)
+	Stream(string, http.Header) (*websocket.Conn, *http.Response, error)
 }
 
 func Stream(dialFn func(context.Context, string, string) (net.Conn, error)) Streamer {
@@ -30,11 +29,10 @@ type socketStream struct {
 	dial *websocket.Dialer
 }
 
-func (ss *socketStream) Stream(op opurl.URLer, header http.Header) (*websocket.Conn, error) {
-	dest := op.String()
+func (ss *socketStream) Stream(addr string, header http.Header) (*websocket.Conn, *http.Response, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	conn, _, err := ss.dial.DialContext(ctx, dest, header)
+	conn, res, err := ss.dial.DialContext(ctx, addr, header)
 	cancel()
 
-	return conn, err
+	return conn, res, err
 }
