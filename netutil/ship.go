@@ -24,9 +24,9 @@ type nodeHandle struct {
 }
 
 func (nh *nodeHandle) Notfound(c *ship.Context) error {
-	code := http.StatusNotFound
-	ret := &pubody.BizError{Code: code, Node: nh.node, Cause: "资源不存在"}
-	return c.JSON(code, ret)
+	r := c.Request()
+	method, dst := r.Method, r.URL
+	return ship.ErrNotFound.Newf("请求资源不存在：%s %s", method, dst)
 }
 
 func (nh *nodeHandle) Error(c *ship.Context, e error) {
