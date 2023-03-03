@@ -14,7 +14,7 @@ import (
 )
 
 // NewClient 创建 http client
-func NewClient(tran *http.Transport, slog logback.Logger) Client {
+func NewClient(tran http.RoundTripper, slog logback.Logger) Client {
 	return Client{
 		cli:  &http.Client{Transport: tran},
 		slog: slog,
@@ -90,6 +90,7 @@ func (c Client) fetchJSON(ctx context.Context, op URLer, header http.Header, bod
 	return c.Fetch(ctx, op, header, rwc)
 }
 
+// NewRequest 构造 http.Request
 func (Client) NewRequest(ctx context.Context, op URLer, header http.Header, body io.Reader) *http.Request {
 	method, dst := op.Method(), op.URL()
 	rc, ok := body.(io.ReadCloser)
@@ -107,6 +108,10 @@ func (Client) NewRequest(ctx context.Context, op URLer, header http.Header, body
 	}
 	if req.Header == nil {
 		req.Header = make(http.Header)
+	}
+	// 设置主机头
+	if host := req.Header.Get("Host"); host != "" {
+		req.Host = host
 	}
 	if body != nil {
 		switch v := body.(type) {

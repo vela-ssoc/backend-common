@@ -2,6 +2,7 @@ package opurl
 
 import (
 	"net/http"
+	"net/url"
 	"strconv"
 )
 
@@ -95,4 +96,20 @@ func BAws(mid, path, query string) URL {
 		query:  query,
 		desc:   "broker->agent websocket 调用",
 	}
+}
+
+func Parse(raw string) (URL, error) {
+	p, err := url.Parse(raw)
+	if err != nil {
+		return URL{}, err
+	}
+	u := URL{
+		scheme: p.Scheme,
+		host:   p.Host,
+		path:   p.Path,
+		query:  p.RawQuery,
+		desc:   raw,
+	}
+
+	return u, nil
 }
