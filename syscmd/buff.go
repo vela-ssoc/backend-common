@@ -1,5 +1,11 @@
 package syscmd
 
+import (
+	"io"
+
+	"github.com/gorilla/websocket"
+)
+
 func limited(max int) *limitedBuffer {
 	return &limitedBuffer{
 		max: max,
@@ -33,4 +39,9 @@ func (lb *limitedBuffer) Write(p []byte) (int, error) {
 
 func (lb *limitedBuffer) bytes() []byte {
 	return lb.buf[:lb.idx]
+}
+
+type socketConn struct {
+	ws *websocket.Conn
+	rd io.Reader
 }
