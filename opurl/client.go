@@ -79,17 +79,6 @@ func (c Client) Attachment(ctx context.Context, op URLer) (Attachment, error) {
 	return att, nil
 }
 
-// fetchJSON 发送的 body 会被 json 序列化
-func (c Client) fetchJSON(ctx context.Context, op URLer, header http.Header, body any) (*http.Response, error) {
-	rwc := c.toJSON(body)
-	if header == nil {
-		header = make(http.Header, 4)
-	}
-	header.Set("Content-Type", "application/json; charset=utf-8")
-	header.Set("Accept", "application/json")
-	return c.Fetch(ctx, op, header, rwc)
-}
-
 // NewRequest 构造 http.Request
 func (Client) NewRequest(ctx context.Context, op URLer, header http.Header, body io.Reader) *http.Request {
 	method, dst := op.Method(), op.URL()
@@ -107,7 +96,7 @@ func (Client) NewRequest(ctx context.Context, op URLer, header http.Header, body
 		Body:       rc,
 	}
 	if req.Header == nil {
-		req.Header = make(http.Header)
+		req.Header = make(http.Header, 4)
 	}
 	// 设置主机头
 	if host := req.Header.Get("Host"); host != "" {
@@ -116,28 +105,24 @@ func (Client) NewRequest(ctx context.Context, op URLer, header http.Header, body
 	if body != nil {
 		switch v := body.(type) {
 		case *bytes.Buffer:
-			req.ContentLength = int64(v.Len())
 			buf := v.Bytes()
 			req.GetBody = func() (io.ReadCloser, error) {
 				r := bytes.NewReader(buf)
 				return io.NopCloser(r), nil
 			}
 		case *bytes.Reader:
-			req.ContentLength = int64(v.Len())
 			snapshot := *v
 			req.GetBody = func() (io.ReadCloser, error) {
 				r := snapshot
 				return io.NopCloser(&r), nil
 			}
 		case *strings.Reader:
-			req.ContentLength = int64(v.Len())
 			snapshot := *v
 			req.GetBody = func() (io.ReadCloser, error) {
 				r := snapshot
 				return io.NopCloser(&r), nil
 			}
-		case *jsonBody:
-			req.ContentLength = int64(v.Len())
+		case io.ReadCloser:
 			req.GetBody = func() (io.ReadCloser, error) {
 				return v, nil
 			}
@@ -147,6 +132,9 @@ func (Client) NewRequest(ctx context.Context, op URLer, header http.Header, body
 			// that broke people during the Go 1.8 testing
 			// period. People depend on it being 0 I
 			// guess. Maybe retry later. See Issue 18117.
+		}
+		if v, yes := body.(interface{ Len() int }); yes {
+			req.ContentLength = int64(v.Len())
 		}
 		// For client requests, Request.ContentLength of 0
 		// means either actually 0, or unknown. The only way
@@ -165,6 +153,17 @@ func (Client) NewRequest(ctx context.Context, op URLer, header http.Header, body
 		ctx = context.Background()
 	}
 	return req.WithContext(ctx)
+}
+
+// fetchJSON 发送的 body 会被 json 序列化
+func (c Client) fetchJSON(ctx context.Context, op URLer, header http.Header, body any) (*http.Response, error) {
+	rwc := c.toJSON(body)
+	if header == nil {
+		header = make(http.Header, 4)
+	}
+	header.Set("Content-Type", "application/json; charset=utf-8")
+	header.Set("Accept", "application/json")
+	return c.Fetch(ctx, op, header, rwc)
 }
 
 func (Client) toJSON(v any) *jsonBody {
