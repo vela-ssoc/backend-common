@@ -2,11 +2,11 @@ package netutil
 
 import (
 	"net/http"
-
-	"gorm.io/gorm"
+	"time"
 
 	"github.com/vela-ssoc/backend-common/pubody"
 	"github.com/xgfone/ship/v5"
+	"gorm.io/gorm"
 )
 
 func Notfound(node string) ship.Handler {
@@ -35,6 +35,8 @@ func (nh *nodeHandle) Error(c *ship.Context, e error) {
 	switch err := e.(type) {
 	case ship.HTTPServerError:
 		code = err.Code
+	case *time.ParseError:
+		cause = "时间格式错误（正确格式：" + err.Layout + "）"
 	default:
 		switch {
 		case err == gorm.ErrRecordNotFound:
