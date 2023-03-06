@@ -15,6 +15,7 @@ type Forwarder interface {
 	Forward(opurl.URLer, http.ResponseWriter, *http.Request)
 }
 
+// Forward 新建 forward 代理
 func Forward(tran *http.Transport, node string) Forwarder {
 	newFn := func() any {
 		return &httputil.ReverseProxy{
