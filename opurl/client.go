@@ -43,7 +43,7 @@ func (c Client) Fetch(ctx context.Context, op URLer, header http.Header, body io
 	_ = res.Body.Close()
 	err = &Error{Code: code, Text: buf[:n]}
 
-	return nil, nil
+	return nil, err
 }
 
 // JSON 请求的数据会被 json 序列化后发送，如果 body 为 nil 也可以发送。响应数据会 json 反序列化。
