@@ -6,6 +6,13 @@ A multiplexed stream library.
 
 - [Example](https://github.com/dfcfw/spdy-example)
 
+## 未来发展
+
+spdy 是一种过渡性的协议。数据分帧、双向流、单向流这些概念已经在 [QUIC](https://www.rfc-editor.org/rfc/rfc9000.html)
+协议中被很好的定义规范。`QUIC` 基于 `udp` 协议，能够实现流式传输、拥塞控制、双向流、单向流等功能。随着 `QUIC`
+的发展和普及，`spdy` 这一块也将会被 `QUIC` 代替，最近 Go 官方开发团队已经对 `QUIC`
+实现发起了 [提案](https://github.com/golang/go/issues/58547)，期待官方正式发布。
+
 ## 帧格式
 
 ```text
