@@ -15,6 +15,9 @@ import (
 
 // NewClient 创建 http client
 func NewClient(tran http.RoundTripper, slog logback.Logger) Client {
+	if tran == nil {
+		tran = http.DefaultTransport
+	}
 	return Client{
 		cli:  &http.Client{Transport: tran},
 		slog: slog,

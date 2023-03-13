@@ -44,7 +44,7 @@ func Stdout() Logger {
 }
 
 func Sugar(l *zap.Logger) Logger {
-	return &sugarLog{sugar: l.Sugar()}
+	return &sugarLog{sugar: l.WithOptions(zap.AddCallerSkip(1)).Sugar()}
 }
 
 type sugarLog struct {

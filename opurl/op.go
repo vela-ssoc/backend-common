@@ -98,3 +98,6 @@ func BAws(mid, path, query string) URL {
 		desc:   "broker->agent websocket 调用",
 	}
 }
+
+func MAfn() {
+}
