@@ -9,25 +9,22 @@ import (
 	"mime"
 	"net/http"
 	"strings"
-
-	"github.com/vela-ssoc/backend-common/logback"
 )
 
 // NewClient 创建 http client
-func NewClient(tran http.RoundTripper, slog logback.Logger) Client {
-	if tran == nil {
-		tran = http.DefaultTransport
+func NewClient(tran ...http.RoundTripper) Client {
+	tr := http.DefaultTransport
+	if len(tran) != 0 && tran[0] != nil {
+		tr = tran[0]
 	}
 	return Client{
-		cli:  &http.Client{Transport: tran},
-		slog: slog,
+		cli: &http.Client{Transport: tr},
 	}
 }
 
 // Client http 客户端
 type Client struct {
-	cli  *http.Client   // http client
-	slog logback.Logger // 日志打印
+	cli *http.Client // http client
 }
 
 // Fetch 发送请求
@@ -80,6 +77,45 @@ func (c Client) Attachment(ctx context.Context, op URLer) (Attachment, error) {
 		att.Checksum = params["checksum"]
 	}
 	return att, nil
+}
+
+func (c Client) FetchJSON(ctx context.Context, method, rawURL string, header http.Header, body, reply any) error {
+	if header == nil {
+		header = make(http.Header, 4)
+	}
+	header.Set("Content-Type", "application/json; charset=utf-8")
+	header.Set("Accept", "application/json")
+	raw := c.toJSON(body)
+	res, err := c.FetchRaw(ctx, method, rawURL, header, raw)
+	if err != nil {
+		return err
+	}
+	//goland:noinspection GoUnhandledErrorResult
+	defer res.Body.Close()
+
+	return json.NewDecoder(res.Body).Decode(reply)
+}
+
+func (c Client) FetchRaw(ctx context.Context, method, rawURL string, header http.Header, body io.Reader) (*http.Response, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	req, err := http.NewRequestWithContext(ctx, method, rawURL, body)
+	if err != nil {
+		return nil, err
+	}
+	for key, values := range header {
+		if len(values) == 0 {
+			continue
+		}
+		if key == "Host" {
+			req.Host = values[0]
+			continue
+		}
+		req.Header[key] = values
+	}
+
+	return c.cli.Do(req)
 }
 
 // NewRequest 构造 http.Request
