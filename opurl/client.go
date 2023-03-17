@@ -70,7 +70,7 @@ func (c Client) Attachment(ctx context.Context, op URLer) (Attachment, error) {
 	if err != nil {
 		return Attachment{}, err
 	}
-	att := Attachment{rc: resp.Body}
+	att := Attachment{code: resp.StatusCode, rc: resp.Body}
 	cd := resp.Header.Get("Content-Disposition")
 	if _, params, _ := mime.ParseMediaType(cd); params != nil {
 		att.Filename = params["filename"]

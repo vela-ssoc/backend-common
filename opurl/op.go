@@ -23,6 +23,8 @@ var (
 	OpPing  = URL{method: http.MethodGet, path: v1api + "/ping", desc: "通用 ping 心跳"}
 	BrkJoin = URL{method: http.MethodConnect, path: v1api + "/broker", desc: "broker 连接 manager 认证"}
 	MonJoin = URL{method: http.MethodConnect, path: v1api + "/minion", desc: "agent(minion) 连接 broker 认证"}
+
+	MBPlateUnset = URL{method: http.MethodPost, path: v1api + "/plate/unset", desc: "通知所有 broker 节点模板发生改变"}
 )
 
 // MArr manager -> agent 请求响应路径
@@ -97,7 +99,4 @@ func BAws(mid, path, query string) URL {
 		query:  query,
 		desc:   "broker->agent websocket 调用",
 	}
-}
-
-func MAfn() {
 }

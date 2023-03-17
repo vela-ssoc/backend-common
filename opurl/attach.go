@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"io"
+	"net/http"
 	"os"
 )
 
@@ -11,7 +12,13 @@ import (
 type Attachment struct {
 	Filename string        // filename
 	Checksum string        // 中心端计算的文件校验码一般是 SHA-1
+	code     int           // http statusCode
 	rc       io.ReadCloser // http 响应 body
+}
+
+// NotModified 文件是否未改变
+func (att Attachment) NotModified() bool {
+	return att.code == http.StatusNotModified
 }
 
 // Copy 写入到指定的流中，返回写入流的 SHA-1
