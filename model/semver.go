@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-// Semver 语义化版本 https://semver.org/lang/zh-CN/
+// Semver1 语义化版本 https://semver.org/lang/zh-CN/
 // major.minor.patch
-type Semver string
+type Semver1 string
 
 // Int64 将版本转换为数值用于方便比较大小
 // major, minor, patch 三项都要小于 step 才有意义，即：最大版本号是：99999.99999.99999
-func (ver Semver) Int64() int64 {
+func (ver Semver1) Int64() int64 {
 	const step = 100000
 	str := string(ver)
 
@@ -39,6 +39,6 @@ func (ver Semver) Int64() int64 {
 }
 
 // String fmt.Stringer
-func (ver Semver) String() string {
+func (ver Semver1) String() string {
 	return string(ver)
 }

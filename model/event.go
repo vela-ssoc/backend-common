@@ -1,11 +1,11 @@
 package model
 
 import (
-	"database/sql/driver"
+	"strconv"
 	"time"
 )
 
-// Event 事件信息表
+// Event 存放节点事件信息
 type Event struct {
 	ID         int64      `json:"id,string"        gorm:"column:id;primaryKey"` // 消息 ID
 	MinionID   int64      `json:"minion_id,string" gorm:"column:minion_id"`     // 节点 ID
@@ -28,64 +28,46 @@ type Event struct {
 	CreatedAt  time.Time  `json:"created_at"       gorm:"column:created_at"`    // 创建时间
 }
 
-// TableName implemented gorm schema.Tabler
+// TableName implement gorm schema.Tabler
 func (Event) TableName() string {
 	return "event"
 }
 
-// EventLevel 事件级别
-// 用 int 表示是为了方便比较：level > EventHigh
-type EventLevel uint8
-
-func (lvl EventLevel) Value() (driver.Value, error) {
-	str := eventIntMap[lvl]
-	return str, nil
-}
-
-func (lvl *EventLevel) Scan(raw any) error {
-	switch dat := raw.(type) {
-	case string:
-		*lvl = eventFmtMap[dat]
-	case []byte:
-		*lvl = eventFmtMap[string(dat)]
-	}
-	return nil
-}
-
-func (lvl EventLevel) MarshalText() ([]byte, error) {
-	str := eventIntMap[lvl]
-	return []byte(str), nil
-}
-
-func (lvl *EventLevel) UnmarshalText(dat []byte) error {
-	*lvl = eventFmtMap[string(dat)]
-	return nil
-}
-
-func (lvl EventLevel) String() string {
-	str := eventIntMap[lvl]
-	return str
-}
-
-const (
-	EventNote EventLevel = iota
-	EventMinor
-	EventMajor
-	EventCritical
-)
-
-var (
-	eventFmtMap = map[string]EventLevel{
-		"普通": EventNote,
-		"次要": EventMinor,
-		"重要": EventMajor,
-		"紧急": EventCritical,
+func (evt Event) Remote() string {
+	if evt.RemoteAddr == "" && evt.RemotePort <= 0 {
+		return ""
 	}
 
-	eventIntMap = map[EventLevel]string{
-		EventNote:     "普通",
-		EventMinor:    "次要",
-		EventMajor:    "重要",
-		EventCritical: "紧急",
+	return evt.RemoteAddr + ":" + strconv.Itoa(evt.RemotePort)
+}
+
+// ShortMsg 短消息
+func (evt Event) ShortMsg(size ...int) string {
+	return evt.shortString(evt.Msg, size...)
+}
+
+// ShortError 短错误信息
+func (evt Event) ShortError(size ...int) string {
+	return evt.shortString(evt.Error, size...)
+}
+
+func (Event) shortString(str string, size ...int) string {
+	if str == "" {
+		return ""
 	}
-)
+
+	sz := 100
+	if len(size) > 0 && size[0] > 0 {
+		sz = size[0]
+	}
+
+	// len([]byte("你好世界")) == 12
+	// len([]rune("你好世界")) == 4
+	unicodes := []rune(str)
+	length := len(unicodes)
+	if sz <= length {
+		return str
+	}
+
+	return string(unicodes[:sz]) + "..."
+}

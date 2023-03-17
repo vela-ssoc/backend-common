@@ -1,7 +1,6 @@
 package model
 
 import (
-	"database/sql/driver"
 	"time"
 )
 
@@ -34,60 +33,3 @@ type Risk struct {
 func (Risk) TableName() string {
 	return "risk"
 }
-
-// RiskLevel 风险级别
-// 用 int 表示是为了方便比较：level > RiskHigh
-type RiskLevel uint8
-
-func (lvl RiskLevel) Value() (driver.Value, error) {
-	str := riskIntMap[lvl]
-	return str, nil
-}
-
-func (lvl *RiskLevel) Scan(raw any) error {
-	switch dat := raw.(type) {
-	case string:
-		*lvl = riskFmtMap[dat]
-	case []byte:
-		*lvl = riskFmtMap[string(dat)]
-	}
-	return nil
-}
-
-func (lvl RiskLevel) MarshalText() ([]byte, error) {
-	str := riskIntMap[lvl]
-	return []byte(str), nil
-}
-
-func (lvl *RiskLevel) UnmarshalText(dat []byte) error {
-	*lvl = riskFmtMap[string(dat)]
-	return nil
-}
-
-func (lvl RiskLevel) String() string {
-	str := riskIntMap[lvl]
-	return str
-}
-
-const (
-	RiskLow RiskLevel = iota
-	RiskMiddle
-	RiskHigh
-	RiskCritical
-)
-
-var (
-	riskFmtMap = map[string]RiskLevel{
-		"低危": RiskLow,
-		"中危": RiskMiddle,
-		"高危": RiskHigh,
-		"紧急": RiskCritical,
-	}
-
-	riskIntMap = map[RiskLevel]string{
-		RiskLow:      "低危",
-		RiskMiddle:   "中危",
-		RiskHigh:     "高危",
-		RiskCritical: "紧急",
-	}
-)

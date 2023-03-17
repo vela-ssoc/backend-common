@@ -43,3 +43,22 @@ const (
 	MinionOnline                       // 在线
 	MinionRemove                       // 移除
 )
+
+// Minions []*Minion
+type Minions []*Minion
+
+// BrokerMap 整理为 key: brokerID; value: minionIDs
+func (ms Minions) BrokerMap() map[int64][]int64 {
+	ret := make(map[int64][]int64, 16)
+	for _, m := range ms {
+		minionIDs := ret[m.BrokerID]
+		if minionIDs == nil {
+			ss := make([]int64, 0, 32)
+			ss = append(ss, m.ID)
+			ret[m.BrokerID] = ss
+		} else {
+			ret[m.BrokerID] = append(minionIDs, m.ID)
+		}
+	}
+	return ret
+}
