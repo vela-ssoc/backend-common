@@ -14,6 +14,7 @@ import (
 type File interface {
 	fs.File
 	fs.FileInfo
+	ID() int64
 	Checksum() string
 	ContentType() string
 	ContentLength() string
@@ -36,14 +37,14 @@ type File interface {
 //
 // ) COMMENT '文件信息表';
 type file struct {
-	ID        int64     `json:"id,string"` // BIGINT 自增
-	Filename  string    `json:"name"`
-	Filesize  int64     `json:"size"`
-	SHA1      string    `json:"sha1"`
-	Burst     int       `json:"burst"`
-	Done      bool      `json:"done"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	id        int64 // BIGINT 自增
+	filename  string
+	filesize  int64
+	sha1      string
+	burst     int
+	done      bool
+	createdAt time.Time
+	updatedAt time.Time
 
 	db     *sql.DB // 数据库连接
 	serial int64   // 分片序号
@@ -51,13 +52,17 @@ type file struct {
 	eof    bool    // 是否读完了
 }
 
+func (fl *file) ID() int64 {
+	return fl.id
+}
+
 // Checksum 文件校验码
 func (fl *file) Checksum() string {
-	return fl.SHA1
+	return fl.sha1
 }
 
 func (fl *file) ContentType() string {
-	ct := mime.TypeByExtension(filepath.Ext(fl.Filename))
+	ct := mime.TypeByExtension(filepath.Ext(fl.filename))
 	// 当 Content-Type 是 text/html 时，就算设置了 Content-Length 长度，
 	// 浏览器下载的时候也不会正常显示进度条，改一下 Content-Type 即可。
 	if ct == "" || strings.HasPrefix(ct, "text/html") {
@@ -68,20 +73,20 @@ func (fl *file) ContentType() string {
 }
 
 func (fl *file) ContentLength() string {
-	return strconv.FormatInt(fl.Filesize, 10)
+	return strconv.FormatInt(fl.filesize, 10)
 }
 
 func (fl *file) Attachment() string {
-	pam := map[string]string{"filename": fl.Filename}
+	pam := map[string]string{"filename": fl.filename}
 
 	return mime.FormatMediaType("attachment", pam)
 }
 
 func (fl *file) Close() error               { return nil }
-func (fl *file) Name() string               { return fl.Filename }
-func (fl *file) Size() int64                { return fl.Filesize }
+func (fl *file) Name() string               { return fl.filename }
+func (fl *file) Size() int64                { return fl.filesize }
 func (fl *file) Mode() fs.FileMode          { return 0o444 }
-func (fl *file) ModTime() time.Time         { return fl.UpdatedAt }
+func (fl *file) ModTime() time.Time         { return fl.updatedAt }
 func (fl *file) IsDir() bool                { return false }
 func (fl *file) Sys() any                   { return nil }
 func (fl *file) Stat() (fs.FileInfo, error) { return fl, nil }
@@ -118,14 +123,14 @@ func (fl *file) Read(p []byte) (int, error) {
 func (fl *file) readPart() error {
 	queryPart := "SELECT `data` FROM grid_part WHERE file_id = ? AND `serial` = ?"
 	var pt part
-	if err := fl.db.QueryRow(queryPart, fl.ID, fl.serial).
-		Scan(&pt.Data); err != nil {
+	if err := fl.db.QueryRow(queryPart, fl.id, fl.serial).
+		Scan(&pt.data); err != nil {
 		fl.eof = true
 		return io.EOF
 	}
 
 	fl.serial++
-	fl.buffer = pt.Data
+	fl.buffer = pt.data
 
 	return nil
 }
@@ -143,8 +148,8 @@ func (fl *file) readPart() error {
 //
 // ) COMMENT '文件分片';
 type part struct {
-	ID     int64  // 分片 ID （无业务意义）
-	FileID int64  // 所属文件 ID
-	Serial int64  // 分片序号 （0-n）
-	Data   []byte // 分片内容
+	id     int64  // 分片 ID （无业务意义）
+	fileID int64  // 所属文件 ID
+	serial int64  // 分片序号 （0-n）
+	data   []byte // 分片内容
 }

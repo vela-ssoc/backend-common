@@ -55,7 +55,7 @@ func (cn *cdn) OpenID(id int64) (File, error) {
 		return nil, fs.ErrPermission
 	}
 
-	if gfl.Filesize <= cn.min {
+	if gfl.filesize <= cn.min {
 		return gfl, nil
 	}
 
@@ -77,7 +77,7 @@ func (cn *cdn) fromCDN(mfl *file) (File, error) {
 	cn.mutex.Lock()
 	defer cn.mutex.Unlock()
 
-	fileID := mfl.ID
+	fileID := mfl.id
 	cf, ok := cn.files[fileID]
 	if ok {
 		// 如果 CDN 本地文件已经缓存完毕，就直接读取本地磁盘的文件，
@@ -92,7 +92,7 @@ func (cn *cdn) fromCDN(mfl *file) (File, error) {
 	}
 
 	// 如果 CDN 还未创建，就创建 CDN 缓存任务
-	filename := strconv.FormatInt(mfl.ID, 10) + "-" + mfl.Filename
+	filename := strconv.FormatInt(mfl.id, 10) + "-" + mfl.filename
 	disk := filepath.Join(cn.dir, filename)
 	dfl, err := os.OpenFile(disk, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0o644)
 	if err != nil {
@@ -166,6 +166,7 @@ func (wf *warpedFile) Checksum() string           { return wf.rawFile.Checksum()
 func (wf *warpedFile) ContentType() string        { return wf.rawFile.ContentType() }
 func (wf *warpedFile) ContentLength() string      { return wf.rawFile.ContentLength() }
 func (wf *warpedFile) Attachment() string         { return wf.rawFile.Attachment() }
+func (wf *warpedFile) ID() int64                  { return wf.rawFile.ID() }
 
 // Seek 实现 io.Seeker 用于支持断点续传
 func (wf *warpedFile) Seek(offset int64, whence int) (int64, error) {
@@ -190,6 +191,7 @@ func (cc *cdnCaching) Checksum() string           { return cc.rawFile.Checksum()
 func (cc *cdnCaching) ContentType() string        { return cc.rawFile.ContentType() }
 func (cc *cdnCaching) ContentLength() string      { return cc.rawFile.ContentLength() }
 func (cc *cdnCaching) Attachment() string         { return cc.rawFile.Attachment() }
+func (cc *cdnCaching) ID() int64                  { return cc.rawFile.ID() }
 
 func (cc *cdnCaching) Read(p []byte) (n int, err error) {
 	if n, err = cc.teeRead.Read(p); err == io.EOF {
@@ -204,7 +206,7 @@ func (cc *cdnCaching) Read(p []byte) (n int, err error) {
 func (cc *cdnCaching) Close() error {
 	if !cc.cdnFile.done.Load() {
 		_ = cc.cdnFile.tmp.Close()
-		cc.cdn.removeID(cc.rawFile.ID)
+		cc.cdn.removeID(cc.rawFile.id)
 	}
 
 	return cc.rawFile.Close()

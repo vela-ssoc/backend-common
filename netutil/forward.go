@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/vela-ssoc/backend-common/opurl"
-	"github.com/vela-ssoc/backend-common/pubody"
+	"github.com/vela-ssoc/backend-common/problem"
 )
 
 // Forwarder 代理转发模块
@@ -22,7 +22,13 @@ func Forward(tran *http.Transport, node string) Forwarder {
 			Transport: tran,
 			ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
 				code := http.StatusBadRequest
-				ret := &pubody.BizError{Code: code, Node: node, Cause: err.Error()}
+				ret := &problem.Problem{
+					Type:     node,
+					Title:    "代理转发错误",
+					Status:   code,
+					Detail:   err.Error(),
+					Instance: r.RequestURI,
+				}
 				w.Header().Set("Content-Type", "application/json; charset=utf-8")
 				w.WriteHeader(code)
 				_ = json.NewEncoder(w).Encode(ret)

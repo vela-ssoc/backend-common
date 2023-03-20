@@ -9,7 +9,7 @@ type MinionBin struct {
 	Goos       string    `json:"goos"       gorm:"column:goos"`
 	Arch       string    `json:"arch"       gorm:"column:arch"`
 	Name       string    `json:"name"       gorm:"column:name"`
-	Size       int       `json:"size"       gorm:"column:size"`
+	Size       int64     `json:"size"       gorm:"column:size"`
 	Hash       string    `json:"hash"       gorm:"column:hash"`
 	Semver     Semver    `json:"semver"     gorm:"column:semver"`
 	Changelog  string    `json:"changelog"  gorm:"column:changelog"`

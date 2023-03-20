@@ -6,12 +6,18 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/vela-ssoc/backend-common/pubody"
+	"github.com/vela-ssoc/backend-common/problem"
 )
 
 func Upgrade(node string) websocket.Upgrader {
 	errorFn := func(w http.ResponseWriter, r *http.Request, status int, reason error) {
-		ret := &pubody.BizError{Code: status, Node: node, Cause: reason.Error()}
+		ret := &problem.Problem{
+			Type:     node,
+			Title:    "websocket 协议升级错误",
+			Status:   status,
+			Detail:   reason.Error(),
+			Instance: r.RequestURI,
+		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(ret)

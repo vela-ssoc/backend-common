@@ -41,8 +41,8 @@ func (gfs *gridFS) OpenID(id int64) (File, error) {
 	rawSQL := "SELECT id, `name`, size, sha1, burst, done, created_at, updated_at FROM grid_file WHERE id = ?"
 	row := gfs.db.QueryRow(rawSQL, id)
 	fl := &file{db: gfs.db}
-	if err := row.Scan(&fl.ID, &fl.Filename, &fl.Filesize, &fl.SHA1, &fl.Burst,
-		&fl.Done, &fl.CreatedAt, &fl.UpdatedAt); err != nil || !fl.Done {
+	if err := row.Scan(&fl.id, &fl.filename, &fl.filesize, &fl.sha1, &fl.burst,
+		&fl.done, &fl.createdAt, &fl.updatedAt); err != nil || !fl.done {
 		return nil, fs.ErrNotExist
 	}
 
@@ -119,14 +119,14 @@ func (gfs *gridFS) Write(r io.Reader, name string) (File, error) {
 		if _, err = tx.Exec(updateFile, filesize, sum, true, updatedAt, fileID); err == nil {
 			if err = tx.Commit(); err == nil {
 				fl := &file{
-					ID:        fileID,
-					Filename:  name,
-					Filesize:  filesize,
-					SHA1:      sum,
-					Burst:     burst,
-					Done:      true,
-					CreatedAt: createdAt,
-					UpdatedAt: updatedAt,
+					id:        fileID,
+					filename:  name,
+					filesize:  filesize,
+					sha1:      sum,
+					burst:     burst,
+					done:      true,
+					createdAt: createdAt,
+					updatedAt: updatedAt,
 					db:        gfs.db,
 				}
 
