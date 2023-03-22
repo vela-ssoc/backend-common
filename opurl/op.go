@@ -25,6 +25,8 @@ var (
 	MonJoin = URL{method: http.MethodConnect, path: v1api + "/minion", desc: "agent(minion) 连接 broker 认证"}
 
 	MBPlateUnset = URL{method: http.MethodPost, path: v1api + "/plate/unset", desc: "通知所有 broker 节点模板发生改变"}
+
+	MAThird = URL{method: http.MethodPost, path: v1api + "/toa/third", desc: "通知 Agent 三方文件变更"}
 )
 
 // MArr manager -> agent 请求响应路径
