@@ -3,6 +3,7 @@ package httpx
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 )
 
 // Error 返回错误
@@ -13,6 +14,10 @@ type Error struct {
 
 func (e *Error) Error() string {
 	return fmt.Sprintf("httpx client response status %d, message is: %s", e.Code, e.Body)
+}
+
+func (e *Error) NotAcceptable() bool {
+	return e.Code == http.StatusNotAcceptable
 }
 
 func (e *Error) JSON(v any) error {
