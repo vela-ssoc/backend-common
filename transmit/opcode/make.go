@@ -21,6 +21,7 @@ const v1api = "/api/v1"
 
 var (
 	EndpointMinion = opURL{method: http.MethodConnect, path: v1api + "/minion", desc: "agent 认证接入"}
+	EndpointBroker = opURL{method: http.MethodConnect, path: v1api + "/broker", desc: "broker 认证接入"}
 	EndpointPing   = opURL{method: http.MethodGet, path: v1api + "/ping", desc: "ping 接入点"}
 )
 

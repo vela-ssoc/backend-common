@@ -1,4 +1,4 @@
-package netutil
+package transmit
 
 import "github.com/gorilla/websocket"
 
