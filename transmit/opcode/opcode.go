@@ -3,6 +3,7 @@ package opcode
 import (
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 type URLer interface {
@@ -10,6 +11,7 @@ type URLer interface {
 	URL() *url.URL
 	AsWS() URLer
 	SetID(string) URLer
+	SetIntID(int64) URLer
 	SetQuery(string) URLer
 }
 
@@ -32,6 +34,11 @@ func (op opURL) Method() string {
 
 func (op opURL) SetID(id string) URLer {
 	op.host = id
+	return op
+}
+
+func (op opURL) SetIntID(id int64) URLer {
+	op.host = strconv.FormatInt(id, 10)
 	return op
 }
 

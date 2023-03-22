@@ -14,7 +14,7 @@ type environment struct {
 type Environments []*environment
 
 func (env *environment) UnmarshalBind(raw string) error {
-	data, err := url.PathUnescape(raw)
+	data, err := url.QueryUnescape(raw)
 	if err != nil {
 		return err
 	}

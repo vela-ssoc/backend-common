@@ -61,4 +61,4 @@ func (sg *sugarLog) Debugf(s string, v ...any) { sg.sugar.Debugf(s, v...) }
 func (sg *sugarLog) Infof(s string, v ...any)  { sg.sugar.Infof(s, v...) }
 func (sg *sugarLog) Warnf(s string, v ...any)  { sg.sugar.Warnf(s, v...) }
 func (sg *sugarLog) Errorf(s string, v ...any) { sg.sugar.Errorf(s, v...) }
-func (sg *sugarLog) Replace(l *zap.Logger)     { sg.sugar = l.Sugar() }
+func (sg *sugarLog) Replace(l *zap.Logger)     { sg.sugar = l.WithOptions(zap.AddCallerSkip(1)).Sugar() }
