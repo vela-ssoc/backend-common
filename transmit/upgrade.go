@@ -10,14 +10,14 @@ import (
 
 func Upgrade(node string) websocket.Upgrader {
 	errorFn := func(w http.ResponseWriter, r *http.Request, status int, reason error) {
-		ret := &problem.Problem{
+		pd := &problem.Detail{
 			Type:     node,
 			Title:    "websocket 协议升级错误",
 			Status:   status,
 			Detail:   reason.Error(),
 			Instance: r.RequestURI,
 		}
-		_ = ret.JSON(w)
+		_ = pd.JSON(w)
 	}
 
 	return websocket.Upgrader{

@@ -19,14 +19,14 @@ func NewForward(trip http.RoundTripper, name string) Forwarder {
 			Transport: trip,
 			ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
 				code := http.StatusBadRequest
-				ret := &problem.Problem{
+				pd := &problem.Detail{
 					Type:     name,
 					Title:    "代理转发错误",
 					Status:   code,
 					Detail:   err.Error(),
 					Instance: r.RequestURI,
 				}
-				_ = ret.JSON(w)
+				_ = pd.JSON(w)
 			},
 		}
 	}

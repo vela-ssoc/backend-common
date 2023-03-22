@@ -8,9 +8,9 @@ import (
 	"strconv"
 )
 
-// Problem Details for HTTP APIs.
+// Detail is Problem Details for HTTP APIs.
 // RFC7807 https://www.rfc-editor.org/rfc/rfc7807
-type Problem struct {
+type Detail struct {
 	// Type A URI reference [RFC3986] that identifies the problem type. This specification
 	// encourages that, when dereferenced, it provide human-readable documentation for
 	// the problem type (e.g., using HTML [W3C.REC-html5-20141028]).
@@ -34,13 +34,13 @@ type Problem struct {
 	Instance string `json:"instance" xml:"instance"`
 }
 
-func (p Problem) JSON(w http.ResponseWriter) error {
-	code := p.Status
+func (d Detail) JSON(w http.ResponseWriter) error {
+	code := d.Status
 	if code < http.StatusBadRequest || code >= 600 {
 		code = http.StatusBadRequest
 	}
 	buf := new(bytes.Buffer)
-	if err := json.NewEncoder(buf).Encode(p); err == nil {
+	if err := json.NewEncoder(buf).Encode(d); err == nil {
 		size := int64(buf.Len())
 		w.Header().Set("Content-Length", strconv.FormatInt(size, 10))
 	}
@@ -50,4 +50,12 @@ func (p Problem) JSON(w http.ResponseWriter) error {
 	_, err := io.Copy(w, buf)
 
 	return err
+}
+
+func (d Detail) Error() string {
+	return "problem detail, type='" + d.Type + "'" +
+		", title='" + d.Title + "'" +
+		", status=" + strconv.FormatInt(int64(d.Status), 10) +
+		", detail='" + d.Detail + "'" +
+		", instance='" + d.Instance + "'"
 }

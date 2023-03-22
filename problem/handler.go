@@ -40,7 +40,7 @@ func (h *handle) NotFound(*ship.Context) error {
 }
 
 func (h *handle) HandleError(c *ship.Context, e error) {
-	ret := &Problem{
+	pd := &Detail{
 		Type:     h.name, // 一般为 URL 全路径，此处设置成节点名字，也便于排查问题
 		Title:    "请求错误",
 		Status:   http.StatusBadRequest,
@@ -50,48 +50,48 @@ func (h *handle) HandleError(c *ship.Context, e error) {
 
 	switch err := e.(type) {
 	case ship.HTTPServerError:
-		ret.Status = err.Code
+		pd.Status = err.Code
 	case *validate.TranError:
-		ret.Title = "参数校验错误"
+		pd.Title = "参数校验错误"
 	case *time.ParseError:
-		ret.Title = "参数格式错误"
-		ret.Detail = "时间格式错误，正确格式：" + err.Layout
+		pd.Title = "参数格式错误"
+		pd.Detail = "时间格式错误，正确格式：" + err.Layout
 	case *net.ParseError:
-		ret.Title = "参数格式错误"
-		ret.Detail = err.Text + " 不是有效的 " + err.Type
+		pd.Title = "参数格式错误"
+		pd.Detail = err.Text + " 不是有效的 " + err.Type
 	case base64.CorruptInputError:
-		ret.Title = "参数格式错误"
-		ret.Detail = "base64 编码错误：" + err.Error()
+		pd.Title = "参数格式错误"
+		pd.Detail = "base64 编码错误：" + err.Error()
 	case *json.SyntaxError:
-		ret.Title = "报文格式错误"
-		ret.Detail = "请求报错必须是 JSON 格式"
+		pd.Title = "报文格式错误"
+		pd.Detail = "请求报错必须是 JSON 格式"
 	case *json.UnmarshalTypeError:
-		ret.Title = "数据类型错误"
-		ret.Detail = err.Field + " 收到无效的数据类型"
+		pd.Title = "数据类型错误"
+		pd.Detail = err.Field + " 收到无效的数据类型"
 	case *strconv.NumError:
-		ret.Title = "数据类型错误"
+		pd.Title = "数据类型错误"
 		var msg string
 		if sn := strings.SplitN(err.Func, "Parse", 2); len(sn) == 2 {
 			msg = err.Num + " 不是 " + strings.ToLower(sn[1]) + " 类型"
 		} else {
 			msg = "类型错误：" + err.Num
 		}
-		ret.Detail = msg
+		pd.Detail = msg
 	case *mysql.MySQLError:
 		switch err.Number {
 		case 1062:
-			ret.Detail = "数据已存在"
+			pd.Detail = "数据已存在"
 		default:
 			c.Errorf("SQL 执行错误：%v", e)
-			ret.Status = http.StatusInternalServerError
-			ret.Detail = "内部错误"
+			pd.Status = http.StatusInternalServerError
+			pd.Detail = "内部错误"
 		}
 	default:
 		switch {
 		case err == gorm.ErrRecordNotFound:
-			ret.Detail = "数据不存在"
+			pd.Detail = "数据不存在"
 		}
 	}
 
-	_ = ret.JSON(c.ResponseWriter())
+	_ = pd.JSON(c.ResponseWriter())
 }
