@@ -1,4 +1,4 @@
-package opcode
+package transmit
 
 import (
 	"crypto/sha1"

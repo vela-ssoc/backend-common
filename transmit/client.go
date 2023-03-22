@@ -1,4 +1,4 @@
-package opcode
+package transmit
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/vela-ssoc/backend-common/httpx"
+	"github.com/vela-ssoc/backend-common/transmit/opcode"
 )
 
 func NewClient(trip http.RoundTripper) Client {
@@ -21,7 +22,11 @@ type Client struct {
 	cli httpx.Client
 }
 
-func (c Client) JSON(ctx context.Context, op URLer, body, resp any) error {
+func (c Client) Fetch(ctx context.Context, op opcode.URLer, rd io.Reader, header http.Header) (*http.Response, error) {
+	return c.fetch(ctx, op, rd, header)
+}
+
+func (c Client) JSON(ctx context.Context, op opcode.URLer, body, resp any) error {
 	res, err := c.fetchJSON(ctx, op, body, nil)
 	if err != nil {
 		return err
@@ -32,7 +37,7 @@ func (c Client) JSON(ctx context.Context, op URLer, body, resp any) error {
 	return json.NewDecoder(res.Body).Decode(resp)
 }
 
-func (c Client) OnewayJSON(ctx context.Context, op URLer, body any) error {
+func (c Client) OnewayJSON(ctx context.Context, op opcode.URLer, body any) error {
 	res, err := c.fetchJSON(ctx, op, body, nil)
 	if err == nil {
 		return res.Body.Close()
@@ -41,7 +46,7 @@ func (c Client) OnewayJSON(ctx context.Context, op URLer, body any) error {
 }
 
 // Attachment 下载文件/附件
-func (c Client) Attachment(ctx context.Context, op URLer) (Attachment, error) {
+func (c Client) Attachment(ctx context.Context, op opcode.URLer) (Attachment, error) {
 	resp, err := c.fetch(ctx, op, nil, nil)
 	if err != nil {
 		return Attachment{}, err
@@ -55,7 +60,12 @@ func (c Client) Attachment(ctx context.Context, op URLer) (Attachment, error) {
 	return att, nil
 }
 
-func (c Client) fetchJSON(ctx context.Context, op URLer, body any, header http.Header) (*http.Response, error) {
+func (c Client) NewRequest(ctx context.Context, op opcode.URLer, body io.Reader, header http.Header) *http.Request {
+	method, addr := op.Method(), op.URL()
+	return c.cli.NewRequest(ctx, method, addr, body, header)
+}
+
+func (c Client) fetchJSON(ctx context.Context, op opcode.URLer, body any, header http.Header) (*http.Response, error) {
 	rd, err := c.toJSON(body)
 	if err != nil {
 		return nil, err
@@ -69,7 +79,7 @@ func (c Client) fetchJSON(ctx context.Context, op URLer, body any, header http.H
 	return c.fetch(ctx, op, rd, header)
 }
 
-func (c Client) fetch(ctx context.Context, op URLer, rd io.Reader, header http.Header) (*http.Response, error) {
+func (c Client) fetch(ctx context.Context, op opcode.URLer, rd io.Reader, header http.Header) (*http.Response, error) {
 	method, addr := op.Method(), op.URL()
 	if ctx == nil {
 		var cancel context.CancelFunc

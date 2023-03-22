@@ -19,6 +19,7 @@ type opURL struct {
 	host   string
 	path   string
 	query  string
+	desc   string
 }
 
 func (op opURL) Method() string {

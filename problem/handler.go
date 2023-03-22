@@ -93,14 +93,5 @@ func (h *handle) HandleError(c *ship.Context, e error) {
 		}
 	}
 
-	// 按照 RFC7807 规范 Content-Type 设置为 application/problem+json 更为妥当。
-	// https://www.rfc-editor.org/rfc/rfc7807.html#section-3
-	buf := c.AcquireBuffer()
-	if err := json.NewEncoder(buf).Encode(ret); err == nil {
-		c.SetRespHeader(ship.HeaderContentLanguage, "zh")
-		c.SetContentType("application/problem+json; charset=UTF-8")
-		c.WriteHeader(ret.Status)
-		_, _ = c.Write(buf.Bytes())
-	}
-	c.ReleaseBuffer(buf)
+	_ = ret.JSON(c.ResponseWriter())
 }

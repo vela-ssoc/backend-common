@@ -6,10 +6,14 @@ import (
 	"sync/atomic"
 )
 
+type Runner interface {
+	Run()
+}
+
 type Tasker interface {
 	Start()
-	Add(func())
-	Stop()
+	Submit(Runner)
+	Shutdown()
 }
 
 func NewTask(workers, buff int) Tasker {
@@ -20,7 +24,7 @@ func NewTask(workers, buff int) Tasker {
 		buff = 1024
 	}
 
-	tasks := make(chan func(), buff)
+	tasks := make(chan Runner, buff)
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &queue{
@@ -32,7 +36,7 @@ func NewTask(workers, buff int) Tasker {
 }
 
 type queue struct {
-	tasks   chan func()
+	tasks   chan Runner
 	workers int
 	working atomic.Bool
 	wg      sync.WaitGroup
@@ -40,13 +44,16 @@ type queue struct {
 	cancel  context.CancelFunc
 }
 
-func (q *queue) Add(fn func()) {
+func (q *queue) Submit(rn Runner) {
+	if rn == nil {
+		return
+	}
 	if err := q.ctx.Err(); err == nil {
-		q.tasks <- fn
+		q.tasks <- rn
 	}
 }
 
-func (q *queue) Stop() {
+func (q *queue) Shutdown() {
 	if q.working.CompareAndSwap(true, false) {
 		q.cancel()
 		q.wg.Wait()
@@ -73,16 +80,16 @@ over:
 		select {
 		case <-q.ctx.Done():
 			break over
-		case fn := <-q.tasks:
-			if fn == nil {
+		case rn := <-q.tasks:
+			if rn == nil {
 				continue
 			}
-			q.call(fn)
+			q.call(rn)
 		}
 	}
 }
 
-func (*queue) call(fn func()) {
+func (*queue) call(rn Runner) {
 	defer func() { recover() }()
-	fn()
+	rn.Run()
 }
