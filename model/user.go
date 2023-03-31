@@ -25,14 +25,6 @@ func (ud UserDomain) String() string {
 	}
 }
 
-func (ud UserDomain) IsLocal() bool {
-	return ud == UdLocal
-}
-
-func (ud UserDomain) IsOA() bool {
-	return ud == UdOA
-}
-
 // User 用户表
 type User struct {
 	ID        int64          `json:"id,string"  gorm:"column:id;primaryKey"` // 用户 ID
@@ -41,7 +33,7 @@ type User struct {
 	Password  string         `json:"-"          gorm:"column:password"`      // 密码
 	Dong      string         `json:"dong"       gorm:"column:dong"`          // 咚咚号(用于接收通知)
 	Enable    bool           `json:"enable"     gorm:"column:enable"`        // 是否启用
-	Domain    UserDomain     `json:"domain"     gorm:"column:domain"`        // 帐号归属域，0-本地账户 1-集团账户 2-证券账户
+	Domain    UserDomain     `json:"domain"     gorm:"column:domain"`        // 帐号归属域，1-本地账户 2-OA账户
 	Token     string         `json:"-"          gorm:"column:token"`         // Token
 	CreatedAt time.Time      `json:"created_at" gorm:"column:created_at"`    // 创建时间
 	UpdatedAt time.Time      `json:"updated_at" gorm:"column:updated_at"`    // 更新时间
@@ -56,9 +48,9 @@ func (User) TableName() string {
 }
 
 func (u User) IsLocal() bool {
-	return u.Domain.IsLocal()
+	return u.Domain == UdLocal
 }
 
 func (u User) IsOA() bool {
-	return u.Domain.IsOA()
+	return u.Domain == UdOA
 }
