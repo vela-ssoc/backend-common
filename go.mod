@@ -11,7 +11,6 @@ require (
 	github.com/xgfone/ship/v5 v5.3.1
 	go.uber.org/zap v1.24.0
 	golang.org/x/net v0.8.0
-	golang.org/x/text v0.8.0
 	gorm.io/gorm v1.24.6
 )
 
@@ -20,7 +19,8 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/leodido/go-urn v1.2.2 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.10.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 )

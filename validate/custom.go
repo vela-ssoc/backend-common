@@ -180,7 +180,7 @@ func passwordFunc(v *validator.Validate, t unt.Translator) {
 			}
 			// 请参考 ASCII 码表，一目了然
 			isLower := func(u rune) bool { return u >= 'a' && u <= 'z' }
-			isUpper := func(u rune) bool { return u >= 'A' && u <= 'A' }
+			isUpper := func(u rune) bool { return u >= 'A' && u <= 'Z' }
 			isNumber := func(u rune) bool { return u >= '0' && u <= '9' }
 			isOther := func(u rune) bool {
 				return (u >= '!' && u <= '/') ||
