@@ -45,7 +45,7 @@ func (p *proxy) Forward(op opcode.URLer, w http.ResponseWriter, r *http.Request)
 	defer p.put(px)
 
 	px.Rewrite = func(r *httputil.ProxyRequest) {
-		r.SetURL(op.URL())
+		r.Out.URL = op.URL()
 		r.SetXForwarded()
 	}
 	px.ServeHTTP(w, r)

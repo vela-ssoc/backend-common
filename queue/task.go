@@ -81,9 +81,6 @@ over:
 		case <-q.ctx.Done():
 			break over
 		case rn := <-q.tasks:
-			if rn == nil {
-				continue
-			}
 			q.call(rn)
 		}
 	}

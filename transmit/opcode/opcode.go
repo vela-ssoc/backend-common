@@ -53,8 +53,8 @@ func (op opURL) URL() *url.URL {
 	}
 
 	return &url.URL{
-		Scheme:   op.scheme,
-		Host:     op.host,
+		Scheme:   scheme,
+		Host:     host,
 		Path:     op.path,
 		RawQuery: op.query,
 	}

@@ -2,8 +2,9 @@ package dynsql
 
 import (
 	"encoding/json"
-	"gorm.io/gorm/clause"
 	"net/url"
+
+	"gorm.io/gorm/clause"
 )
 
 type Conditions []*Condition
@@ -58,7 +59,6 @@ func (env *environment) Inter(conds Conditions) (clause.Expression, error) {
 }
 
 func (*environment) expr(col string, values []string) {
-
 }
 
 func (env *environment) matchOp(col, op string) Operator {
@@ -82,3 +82,5 @@ func (env *environment) matchOp(col, op string) Operator {
 type parsedColumn struct {
 	allowOps map[string]struct{}
 }
+
+// enum int string
