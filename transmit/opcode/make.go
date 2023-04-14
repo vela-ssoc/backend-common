@@ -24,8 +24,11 @@ var (
 	EndpointBroker = opURL{method: http.MethodConnect, path: v1api + "/broker", desc: "broker 认证接入"}
 	EndpointPing   = opURL{method: http.MethodGet, path: v1api + "/ping", desc: "ping 接入点"}
 
+	DistributeMinionIDs = opURL{method: http.MethodPost, path: v1api + "/distribute/ids"}
+
 	// EdictSubstanceEvent 配置变动事件
 	EdictSubstanceEvent = opURL{method: http.MethodPost, path: v1api + "/edict/substance/event", desc: "配置变更通知"}
+	EdictCommandEvent   = opURL{method: http.MethodPost, path: v1api + "/edict/command/event", desc: "命令事件"}
 )
 
 // MArr manager -> agent 请求响应路径
@@ -99,5 +102,13 @@ func BAws(mid, path, query string) URLer {
 		path:   v1api + "/aws/" + path,
 		query:  query,
 		desc:   "broker->agent websocket 调用",
+	}
+}
+
+func Unsafe(method, path string) URLer {
+	return opURL{
+		method: method,
+		scheme: "http",
+		path:   path,
 	}
 }

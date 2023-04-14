@@ -8,6 +8,7 @@ import (
 
 type URLer interface {
 	Method() string
+	Path() string
 	URL() *url.URL
 	AsWS() URLer
 	SetID(string) URLer
@@ -30,6 +31,14 @@ func (op opURL) Method() string {
 		method = http.MethodGet
 	}
 	return method
+}
+
+func (op opURL) Path() string {
+	path := op.path
+	if path == "" {
+		path = "/"
+	}
+	return path
 }
 
 func (op opURL) SetID(id string) URLer {
