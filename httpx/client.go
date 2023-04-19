@@ -10,8 +10,6 @@ import (
 	"net/url"
 	"strings"
 	"time"
-
-	"golang.org/x/net/http/httpguts"
 )
 
 // Client HTTP 客户端
@@ -133,7 +131,7 @@ func (c Client) fetch(ctx context.Context, method string, addr *url.URL, body io
 
 // newRequest 构造 http.Request
 func (c Client) newRequest(ctx context.Context, method string, addr *url.URL, body io.Reader, header http.Header) *http.Request {
-	if method == "" || !c.validMethod(method) {
+	if method == "" {
 		method = http.MethodGet
 	}
 	if addr == nil {
@@ -225,25 +223,4 @@ func (Client) toJSON(v any) (io.Reader, error) {
 		return nil, err
 	}
 	return buf, nil
-}
-
-func (c Client) validMethod(method string) bool {
-	/*
-	     Method         = "OPTIONS"                ; Section 9.2
-	                    | "GET"                    ; Section 9.3
-	                    | "HEAD"                   ; Section 9.4
-	                    | "POST"                   ; Section 9.5
-	                    | "PUT"                    ; Section 9.6
-	                    | "DELETE"                 ; Section 9.7
-	                    | "TRACE"                  ; Section 9.8
-	                    | "CONNECT"                ; Section 9.9
-	                    | extension-method
-	   extension-method = token
-	     token          = 1*<any CHAR except CTLs or separators>
-	*/
-	return len(method) > 0 && strings.IndexFunc(method, c.isNotToken) == -1
-}
-
-func (Client) isNotToken(r rune) bool {
-	return !httpguts.IsTokenRune(r)
 }
