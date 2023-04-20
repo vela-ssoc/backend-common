@@ -62,6 +62,10 @@ func (Minion) TableName() string {
 	return "minion"
 }
 
+func (m Minion) Invalid() bool {
+	return m.Status != MSOffline && m.Status != MSOnline
+}
+
 // Minions []*Minion
 type Minions []*Minion
 
