@@ -7,7 +7,7 @@ type Compound struct {
 	ID         int64     `json:"id,string"         gorm:"column:id;primaryKey"`   // ID
 	Name       string    `json:"name"              gorm:"column:name"`            // 名字
 	Desc       string    `json:"desc"              gorm:"column:desc"`            // 说明
-	Substances Int64s    `json:"substances"        gorm:"column:substances;json"` // 配置项
+	Substances []int64   `json:"substances"        gorm:"column:substances;json"` // 配置项
 	Exclusion  []string  `json:"exclusion"         gorm:"column:exclusion;json"`  // 排除掉的节点 IP
 	Version    int64     `json:"version"           gorm:"column:version"`         // 乐观锁
 	CreatedID  int64     `json:"created_id,string" gorm:"column:created_id"`      // 创建人 ID
