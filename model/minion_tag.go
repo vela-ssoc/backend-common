@@ -54,6 +54,29 @@ func (mts MinionTags) ToMap() map[int64][]string {
 	return ret
 }
 
+func (mts MinionTags) Map() map[int64]MinionTags {
+	ret := make(map[int64]MinionTags, 16)
+	for _, mt := range mts {
+		mid := mt.MinionID
+		tags := ret[mid]
+		ret[mid] = append(tags, mt)
+	}
+	return ret
+}
+
+func (mts MinionTags) Distinct() []string {
+	hm := make(map[string]struct{}, 16)
+	ret := make([]string, 0, 16)
+	for _, mt := range mts {
+		tag := mt.Tag
+		if _, ok := hm[tag]; !ok {
+			hm[tag] = struct{}{}
+			ret = append(ret, tag)
+		}
+	}
+	return ret
+}
+
 func (mts MinionTags) MinionIDs() []int64 {
 	size := len(mts)
 	ret := make([]int64, 0, size)

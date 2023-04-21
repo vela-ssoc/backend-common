@@ -2,6 +2,8 @@ package httpx
 
 import (
 	"bytes"
+	"compress/flate"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"io"
@@ -108,10 +110,27 @@ func (c Client) fetch(ctx context.Context, method string, addr *url.URL, body io
 	}
 
 	req := c.NewRequest(ctx, method, addr, body, header)
+	req.Header.Set("Accept-Encoding", "gzip, deflate")
 	res, err := c.cli.Do(req)
 	if err != nil {
 		return nil, err
 	}
+	resp := res.Body
+	if resp != nil && resp != http.NoBody {
+		switch res.Header.Get("Content-Encoding") {
+		case "gzip":
+			gr, ex := gzip.NewReader(resp)
+			if ex != nil {
+				_ = resp.Close()
+				return nil, ex
+			}
+			res.Body = gr
+		case "deflate":
+			fr := flate.NewReader(resp)
+			res.Body = fr
+		}
+	}
+
 	code := res.StatusCode
 	if code >= http.StatusOK && code < http.StatusBadRequest { // 200 <= code < 400
 		return res, nil
