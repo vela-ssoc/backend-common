@@ -68,3 +68,17 @@ func (Effects) exclusion(exs []string, ip string) bool {
 
 	return false
 }
+
+func (es Effects) Tags() []string {
+	hm := make(map[string]struct{}, 8)
+	ret := make([]string, 0, 8)
+	for _, e := range es {
+		tag := e.Tag
+		if _, ok := hm[tag]; !ok {
+			hm[tag] = struct{}{}
+			ret = append(ret, tag)
+		}
+	}
+
+	return ret
+}
