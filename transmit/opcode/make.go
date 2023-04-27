@@ -29,6 +29,7 @@ var (
 	// EdictSubstanceEvent 配置变动事件
 	EdictSubstanceEvent = opURL{method: http.MethodPost, path: v1api + "/edict/substance/event", desc: "配置变更通知"}
 	EdictCommandEvent   = opURL{method: http.MethodPost, path: v1api + "/edict/command/event", desc: "命令事件"}
+	EdictEventRemove    = opURL{method: http.MethodPost, path: v1api + "/edict/event/remove", desc: "节点删除"}
 )
 
 // MArr manager -> agent 请求响应路径
