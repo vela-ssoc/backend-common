@@ -6,44 +6,33 @@ import (
 )
 
 var (
-	TString = &stringType{}
-	TInt    = &intType{}
-	TFloat  = &floatType{}
-	TBool   = &boolType{}
-	TTime   = &timeType{}
+	typeString columnTyper = &stringColumnType{}
+	typeInt    columnTyper = &intColumnType{}
+	typeBool   columnTyper = &boolColumnType{}
+	typeTime   columnTyper = &timeColumnType{}
 )
 
-type Typer interface {
-	String() string
+type columnTyper interface {
+	name() string
 	cast(string) (any, error)
 }
 
-type stringType struct{}
+type stringColumnType struct{}
 
-func (stringType) String() string { return "string" }
+func (s *stringColumnType) name() string                 { return "string" }
+func (s *stringColumnType) cast(str string) (any, error) { return str, nil }
 
-func (stringType) cast(val string) (any, error) { return val, nil }
+type intColumnType struct{}
 
-type intType struct{}
+func (i *intColumnType) name() string                 { return "int" }
+func (i *intColumnType) cast(str string) (any, error) { return strconv.ParseInt(str, 10, 64) }
 
-func (intType) String() string { return "int" }
+type boolColumnType struct{}
 
-func (intType) cast(val string) (any, error) { return strconv.ParseInt(val, 10, 64) }
+func (b *boolColumnType) name() string                 { return "bool" }
+func (b *boolColumnType) cast(str string) (any, error) { return strconv.ParseBool(str) }
 
-type floatType struct{}
+type timeColumnType struct{}
 
-func (floatType) String() string { return "float" }
-
-func (floatType) cast(val string) (any, error) { return strconv.ParseFloat(val, 64) }
-
-type boolType struct{}
-
-func (boolType) String() string { return "bool" }
-
-func (boolType) cast(val string) (any, error) { return strconv.ParseBool(val) }
-
-type timeType struct{}
-
-func (timeType) String() string { return "time" }
-
-func (timeType) cast(val string) (any, error) { return time.Parse(time.RFC3339, val) }
+func (t *timeColumnType) name() string                 { return "time" }
+func (t *timeColumnType) cast(val string) (any, error) { return time.Parse(time.RFC3339, val) }
