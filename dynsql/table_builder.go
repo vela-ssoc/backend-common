@@ -40,29 +40,21 @@ func (tb *tableBuilder) Build() Table {
 	filters := make(columnSchemas, 0, fsz)
 	groups := make(nameSchemas, 0, gsz)
 	orders := make(nameSchemas, 0, osz)
-	for i := fsz - 1; i > -1; i-- {
-		c := tb.filters[i]
+
+	for _, c := range tb.filters {
 		cn := c.columnName()
-		if _, exist := filterMap[cn]; !exist {
-			filterMap[cn] = c
-			filters = append(filters, c.columnSchema())
-		}
+		filterMap[cn] = c
+		filters = append(filters, c.columnSchema())
 	}
-	for i := osz - 1; i > -1; i-- {
-		o := tb.orders[i]
+	for _, o := range tb.orders {
 		cn := o.columnName()
-		if _, exist := orderMap[cn]; !exist {
-			orderMap[cn] = struct{}{}
-			orders = append(orders, o.nameSchema())
-		}
+		orderMap[cn] = struct{}{}
+		orders = append(orders, o.nameSchema())
 	}
-	for i := gsz - 1; i > -1; i-- {
-		o := tb.groups[i]
-		cn := o.columnName()
-		if _, exist := groupMap[cn]; !exist {
-			groupMap[cn] = struct{}{}
-			groups = append(groups, o.nameSchema())
-		}
+	for _, g := range tb.groups {
+		cn := g.columnName()
+		groupMap[cn] = struct{}{}
+		groups = append(groups, g.nameSchema())
 	}
 
 	return &tableEnv{

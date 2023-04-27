@@ -36,7 +36,7 @@ func (tbl *tableEnv) Schema() Schema {
 }
 
 func (tbl *tableEnv) Inter(input Input) (Scope, error) {
-	if input.empty() || (len(tbl.orderMap) == 0 && len(tbl.filterMap) == 0) {
+	if input.empty() || (len(tbl.orderMap) == 0 && len(tbl.filterMap) == 0 && len(tbl.groupMap) == 0) {
 		return nil, nil
 	}
 

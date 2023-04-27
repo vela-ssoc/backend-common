@@ -25,12 +25,9 @@ func (ib *intEnumBuilder) Set(item int, name string) IntEnumBuilder {
 
 func (ib *intEnumBuilder) build() Enums {
 	enums := make([]*enumItem, 0, len(ib.hm))
-	max := len(ib.orders)
-	for i := max - 1; i > -1; i-- {
-		val := ib.orders[i]
-		if name, ok := ib.hm[val]; ok {
-			enums = append(enums, &enumItem{Val: val, Name: name})
-		}
+	for _, od := range ib.orders {
+		name := ib.hm[od]
+		enums = append(enums, &enumItem{Val: od, Name: name})
 	}
 	return Enums{items: enums}
 }

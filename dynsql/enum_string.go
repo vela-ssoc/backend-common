@@ -34,12 +34,9 @@ func (sb *stringEnumBuilder) Sames(items []string) StringEnumBuilder {
 
 func (sb *stringEnumBuilder) build() Enums {
 	enums := make([]*enumItem, 0, len(sb.hm))
-	max := len(sb.orders)
-	for i := max - 1; i > -1; i-- {
-		val := sb.orders[i]
-		if name, ok := sb.hm[val]; ok {
-			enums = append(enums, &enumItem{Val: val, Name: name})
-		}
+	for _, od := range sb.orders {
+		name := sb.hm[od]
+		enums = append(enums, &enumItem{Val: od, Name: name})
 	}
 
 	return Enums{items: enums}
