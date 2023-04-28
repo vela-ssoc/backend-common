@@ -36,8 +36,9 @@ func (tbl *tableEnv) Schema() Schema {
 }
 
 func (tbl *tableEnv) Inter(input Input) (Scope, error) {
+	ret := new(scope)
 	if input.empty() || (len(tbl.orderMap) == 0 && len(tbl.filterMap) == 0 && len(tbl.groupMap) == 0) {
-		return nil, nil
+		return ret, nil
 	}
 
 	filters, group, order := input.Filters, input.Group, input.Order
@@ -55,21 +56,21 @@ func (tbl *tableEnv) Inter(input Input) (Scope, error) {
 			items = append(items, item)
 		}
 	}
-
-	ret := new(scope)
 	if len(items) != 0 {
 		ret.where = clause.And(items...)
 	}
+
+	ret.desc = input.Desc
 	if order != "" && len(tbl.orderMap) != 0 {
 		if _, exist := tbl.orderMap[order]; !exist {
 			return nil, &Error{name: "排序条件", value: order}
 		}
 		ret.orderBy = order
-		ret.desc = input.Desc
 	}
+
 	if group != "" && len(tbl.groupMap) != 0 {
 		if _, exist := tbl.groupMap[group]; !exist {
-			return nil, &Error{name: "分组条件", value: order}
+			return nil, &Error{name: "分组条件", value: group}
 		}
 		ret.groupBy = group
 	}
@@ -78,7 +79,10 @@ func (tbl *tableEnv) Inter(input Input) (Scope, error) {
 }
 
 type Scope interface {
-	Scope(*gorm.DB) *gorm.DB
+	Where(*gorm.DB) *gorm.DB
+	GroupBy(*gorm.DB) *gorm.DB
+	OrderBy(*gorm.DB) *gorm.DB
+	GroupColumn() string
 }
 
 type scope struct {
@@ -88,17 +92,28 @@ type scope struct {
 	desc    bool
 }
 
-func (sc *scope) Scope(db *gorm.DB) *gorm.DB {
+func (sc *scope) Where(db *gorm.DB) *gorm.DB {
 	if w := sc.where; w != nil {
-		db.Where(w)
+		return db.Where(w)
 	}
+	return db
+}
+
+func (sc *scope) GroupBy(db *gorm.DB) *gorm.DB {
 	if g := sc.groupBy; g != "" {
-		db.Group(g)
+		return db.Group(g)
 	}
+	return db
+}
+
+func (sc *scope) OrderBy(db *gorm.DB) *gorm.DB {
 	if o := sc.orderBy; o != "" {
 		column := clause.Column{Name: o, Raw: true}
 		db.Order(clause.OrderByColumn{Column: column, Desc: sc.desc})
 	}
-
 	return db
+}
+
+func (sc *scope) GroupColumn() string {
+	return sc.groupBy
 }

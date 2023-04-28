@@ -1,6 +1,10 @@
 package dynsql
 
-import "gorm.io/gorm/clause"
+import (
+	"strings"
+
+	"gorm.io/gorm/clause"
+)
 
 var (
 	Eq      = &operator{opName: "等于", opSymbol: "eq"}
@@ -55,11 +59,21 @@ func (op *operator) expr(col string, values ...any) clause.Expression {
 	case NotIn:
 		in := clause.IN{Column: col, Values: values}
 		return clause.Not(in)
-	case Like:
-		return clause.Like{Column: col, Value: value}
-	case NotLike:
+	case Like, NotLike:
+		if str, ok := value.(string); ok {
+			// 如果输入包含了通配符，就不再拼接通配符，MySQL 通配符参考以下链接：
+			// https://dev.mysql.com/doc/refman/8.0/en/pattern-matching.html
+			if !strings.Contains(str, "%") &&
+				!strings.Contains(str, "_") {
+				value = "%" + str + "%"
+			}
+		}
+
 		like := clause.Like{Column: col, Value: value}
-		return clause.Not(like)
+		if op == NotLike {
+			return clause.Not(like)
+		}
+		return like
 	}
 	return nil
 }

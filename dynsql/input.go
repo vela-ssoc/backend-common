@@ -6,19 +6,19 @@ import (
 )
 
 type Input struct {
-	Filters []*filter `query:"filters"`
+	Filters []*filter `query:"filters" validate:"dive"`
 	Group   string    `query:"group"`
 	Order   string    `query:"order"`
 	Desc    bool      `query:"desc"`
 }
 
 func (in Input) empty() bool {
-	return len(in.Filters) == 0 && in.Order == ""
+	return len(in.Filters) == 0 && in.Group == "" && in.Order == ""
 }
 
 type filter struct {
 	Col string `json:"col" validate:"required,lte=50"`
-	Op  string `json:"op"  validate:"oneof=eq ne gt lt gte lte in notin like notlike"`
+	Op  string `json:"op"  validate:"omitempty,oneof=eq ne gt lt gte lte in notin like notlike"`
 	Val string `json:"val" validate:"lte=100"`
 }
 
