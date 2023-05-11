@@ -6,11 +6,11 @@ import (
 	"sync"
 
 	"github.com/vela-ssoc/backend-common/problem"
-	"github.com/vela-ssoc/backend-common/transmit/opcode"
+	"github.com/vela-ssoc/backend-common/transmit/opurl"
 )
 
 type Forwarder interface {
-	Forward(opcode.URLer, http.ResponseWriter, *http.Request)
+	Forward(opurl.URLer, http.ResponseWriter, *http.Request)
 }
 
 func NewForward(trip http.RoundTripper, name string) Forwarder {
@@ -40,7 +40,7 @@ type proxy struct {
 	pool sync.Pool
 }
 
-func (p *proxy) Forward(op opcode.URLer, w http.ResponseWriter, r *http.Request) {
+func (p *proxy) Forward(op opurl.URLer, w http.ResponseWriter, r *http.Request) {
 	px := p.get()
 	defer p.put(px)
 
