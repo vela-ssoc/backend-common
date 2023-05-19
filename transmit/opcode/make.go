@@ -2,7 +2,6 @@ package opcode
 
 import (
 	"net/http"
-	"net/url"
 	"strconv"
 )
 
@@ -113,10 +112,4 @@ func Unsafe(method, path string) URLer {
 		scheme: "http",
 		path:   path,
 	}
-}
-
-type name interface {
-	URL() *url.URL
-	MinionID() string
-	String() string
 }
